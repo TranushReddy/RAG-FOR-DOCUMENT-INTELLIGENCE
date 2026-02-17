@@ -1,0 +1,33 @@
+# Core utilities
+python-dotenv
+
+# Data handling
+pandas
+numpy
+
+# NLP & Embeddings
+torch
+transformers
+sentence-transformers
+scikit-learn
+
+# Document processing
+pdfplumber
+python-docx
+pillow
+pytesseract
+
+# OCR dependency (system-level: tesseract-ocr)
+# install separately
+
+# Vector search (optional but recommended)
+faiss-cpu
+
+# Gemini LLM (Free API)
+google-generativeai
+
+# Frontend
+streamlit
+
+# Compatibility fixes
+tf-keras
