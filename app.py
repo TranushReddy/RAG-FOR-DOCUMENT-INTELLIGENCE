@@ -27,9 +27,25 @@ def run_rag_pipeline(document_path: str, query: str):
 
     print("\n--- Multi-Model RAG System for Document Intelligence ---\n")
 
-    # Step 1: Load document
+    # Step 1: Load document FIRST so raw_text is available
     print("[1] Loading document...")
     raw_text = load_document(document_path)
+
+    # Check extension
+    extension = os.path.splitext(document_path)[1].lower()
+
+    # Bypassing RAG for CSV files
+    if extension == ".csv":
+        print(
+            "[!] CSV detected: Bypassing retrieval and using full content as context."
+        )
+        generator = ResponseGenerator()
+        # raw_text is now defined and can be wrapped in a list
+        answer = generator.generate_answer(query, [raw_text])
+
+        print(f"🔍 Query: {query}")
+        print(f"✅ Final Answer: {answer}")
+        return
 
     # Step 2: Preprocess document text
     print("[2] Preprocessing document...")

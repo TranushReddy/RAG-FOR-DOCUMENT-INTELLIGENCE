@@ -29,7 +29,7 @@ def load_docx(file_path: str) -> str:
 # -------- CSV Loader --------
 def load_csv(file_path: str) -> str:
     df = pd.read_csv(file_path)
-    return df.to_string(index=False)
+    return df.to_markdown(index=False)
 
 
 # -------- TXT Loader --------
