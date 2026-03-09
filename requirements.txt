@@ -1,26 +1,15 @@
-# Core utilities
-python-dotenv
-protobuf==3.20.3
-
-# Data handling
+streamlit
 pandas
 numpy
-
-# NLP & Embeddings
-sentence-transformers
-scikit-learn
-
-# Document processing
-pdfplumber
-python-docx
+python-dotenv
+requests
 pillow
 pytesseract
-
-# Vector search
+tabulate
+sentence-transformers
+scikit-learn
+torch
+transformers
 faiss-cpu
-
-# Gemini API
-google-generativeai
-
-# Frontend
-streamlit==1.32.2
+pdfplumber
+python-docx
