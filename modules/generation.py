@@ -1,29 +1,49 @@
 import os
 import requests
-from typing import List
+import streamlit as st
+from typing import List, Optional
 from dotenv import load_dotenv
 
-# Load environment variables
 load_dotenv()
 
-# --------------------------------------------------
+# ==================================================
 # Configuration
-# --------------------------------------------------
+# ==================================================
 
-AI_API_PROVIDER = os.getenv("AI_API_PROVIDER", "groq").strip().lower()
+def get_config(key: str, default=None):
+    try:
+        return st.secrets[key]
+    except Exception:
+        return os.getenv(key, default)
 
-# Gemini
-GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
-GEMINI_MODEL = os.getenv("GEMINI_MODEL", "models/gemini-2.5-flash")
+
+AI_API_PROVIDER = str(
+    get_config("AI_API_PROVIDER", "groq")
+).strip().lower()
+
+# ==================================================
+# Gemini Configuration
+# ==================================================
+
+GEMINI_API_KEY = get_config("GEMINI_API_KEY")
+
+GEMINI_MODEL = get_config(
+    "GEMINI_MODEL",
+    "models/gemini-2.5-flash"
+)
 
 GEMINI_URL = (
     f"https://generativelanguage.googleapis.com/v1beta/"
     f"{GEMINI_MODEL}:generateContent"
 )
 
-# Groq
-GROQ_API_KEY = os.getenv("GROQ_API_KEY")
-GROQ_MODEL = os.getenv(
+# ==================================================
+# Groq Configuration
+# ==================================================
+
+GROQ_API_KEY = get_config("GROQ_API_KEY")
+
+GROQ_MODEL = get_config(
     "GROQ_MODEL",
     "llama-3.3-70b-versatile"
 )
@@ -31,34 +51,38 @@ GROQ_MODEL = os.getenv(
 GROQ_URL = "https://api.groq.com/openai/v1/chat/completions"
 
 
-# --------------------------------------------------
+# ==================================================
 # Response Generator
-# --------------------------------------------------
+# ==================================================
 
 class ResponseGenerator:
+
     def __init__(
         self,
         temperature: float = 0.3,
-        provider: str | None = None
+        provider: Optional[str] = None
     ):
         self.temperature = temperature
-        self.provider = (provider or AI_API_PROVIDER).strip().lower()
+        self.provider = (
+            provider or AI_API_PROVIDER
+        ).strip().lower()
 
         if self.provider == "gemini":
             if not GEMINI_API_KEY:
                 raise ValueError(
-                    "GEMINI_API_KEY not found in .env"
+                    "GEMINI_API_KEY not found."
                 )
 
         elif self.provider == "groq":
             if not GROQ_API_KEY:
                 raise ValueError(
-                    "GROQ_API_KEY not found in .env"
+                    "GROQ_API_KEY not found."
                 )
 
         else:
             raise ValueError(
-                "Unsupported provider. Use 'gemini' or 'groq'."
+                "Unsupported provider. "
+                "Use 'gemini' or 'groq'."
             )
 
     def generate_answer(
@@ -67,13 +91,21 @@ class ResponseGenerator:
         context_chunks: List[str]
     ) -> str:
 
-        if not context_chunks:
+        if context_chunks is None:
             return (
                 "I could not find the answer "
                 "in the provided documents."
             )
 
-        context_text = "\n\n".join(context_chunks)
+        if len(context_chunks) == 0:
+            return (
+                "I could not find the answer "
+                "in the provided documents."
+            )
+
+        context_text = "\n\n".join(
+            str(chunk) for chunk in context_chunks
+        )
 
         prompt = f"""
 You are a document intelligence assistant.
@@ -100,9 +132,9 @@ Answer:
 
         return self._generate_with_groq(prompt)
 
-    # --------------------------------------------------
+    # ==================================================
     # Gemini
-    # --------------------------------------------------
+    # ==================================================
 
     def _generate_with_gemini(self, prompt: str) -> str:
 
@@ -125,7 +157,7 @@ Answer:
         response = requests.post(
             f"{GEMINI_URL}?key={GEMINI_API_KEY}",
             json=payload,
-            timeout=40,
+            timeout=60,
         )
 
         if response.status_code != 200:
@@ -149,9 +181,9 @@ Answer:
                 f"Unexpected Gemini response:\n{result}"
             )
 
-    # --------------------------------------------------
+    # ==================================================
     # Groq
-    # --------------------------------------------------
+    # ==================================================
 
     def _generate_with_groq(self, prompt: str) -> str:
 
@@ -176,7 +208,7 @@ Answer:
             GROQ_URL,
             json=payload,
             headers=headers,
-            timeout=40,
+            timeout=60,
         )
 
         if response.status_code != 200:
@@ -201,9 +233,9 @@ Answer:
             )
 
 
-# --------------------------------------------------
+# ==================================================
 # Local Test
-# --------------------------------------------------
+# ==================================================
 
 if __name__ == "__main__":
 
