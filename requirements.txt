@@ -9,6 +9,7 @@ tabulate
 sentence-transformers
 scikit-learn
 torch
+torchvision
 transformers
 faiss-cpu
 pdfplumber
